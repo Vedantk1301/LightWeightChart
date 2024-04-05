@@ -1,6 +1,7 @@
 {
   "name": "my-app",
   "version": "0.1.0",
+  "proxy": "https://lightweightchart.onrender.com/",
   "private": true,
   "scripts": {
     "fastapi-dev": "uvicorn api.main:app --reload",
