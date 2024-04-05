@@ -12,6 +12,7 @@
         "src": "/api/(.*)",
         "dest": "/api/main.py"
       }
-    ]
+    ],
+    "installCommand": "pip install -r requirements.txt"
   }
   
