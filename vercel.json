@@ -5,7 +5,6 @@
       {
         "src": "api/main.py",
         "use": "@vercel/python"
-        "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
       }
     ],
     "routes": [
@@ -13,6 +12,9 @@
         "src": "/api/(.*)",
         "dest": "/api/main.py"
       }
-    ]
+    ],  
+    "env": {
+    "APP_MODULE": "api/main:app"
+    }
   }
   
