@@ -1,29 +1,22 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict
 from ultralytics import YOLO
 from PIL import Image
-from fastapi.middleware.cors import CORSMiddleware
 import base64
 import io
-from io import BytesIO
-from typing import List, Dict
 import math
 from datetime import datetime, timedelta
-import pandas as pd   
-from sklearn.preprocessing import MinMaxScaler, RobustScaler
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+import pandas as pd
+from sklearn.preprocessing import RobustScaler
+import torch
 from api.model_functions import calculate_r2, calculate_mape, plot_predictions
 from api.LSTM_GRU import StockLSTM
 from api.Feature_generator import calculate_indicators
-from datetime import datetime, timedelta 
-import torch
-import torch.nn as nn
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 # Initialize the FastAPI app
 app = FastAPI()
