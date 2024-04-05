@@ -30,30 +30,24 @@ app.add_middleware(
 )
 
 # Load your YOLO model
-#model = YOLO('E:/Final-Year-Project/CNN-Model/CNN model/best.pt')
 model = YOLO('api/best.pt')
 
 # Define a request body model for uploading images
 class ImageInput(BaseModel):
     image: str  # Change this to str to accept a Data URL
     data: List[Dict]
-    fdata: List[Dict] 
-
-#def process_image_upload(allData: ImageInput):
-    # Run the LSTM model and get the prediction
-    #predicted_stock = load_and_run_model(allData.dict().get('fdata'))
-    #return predicted_stock
+    fdata: List[Dict]
 
 # Define a route to accept image uploads
 @app.post("/api/upload/")
-async def upload_image(allData: ImageInput):  # Change this to accept an ImageInput
+async def upload_image(allData: ImageInput):
     scaler_features = RobustScaler()
     scaler_close = RobustScaler()
     input_size = 16  # Number of features
-    hidden_size = 64# Number of LSTM units
-    num_layers = 2 # Number of LSTM layers
-    output_size = 15 
-    dropout_prob=0.25
+    hidden_size = 64  # Number of LSTM units
+    num_layers = 2  # Number of LSTM layers
+    output_size = 15
+    dropout_prob = 0.25
 
     # Decode the Data URL
     image_data = base64.b64decode(allData.image.split(',')[1])
@@ -66,15 +60,12 @@ async def upload_image(allData: ImageInput):  # Change this to accept an ImageIn
 
     # Get the full data
     full_data = allData.dict().get('fdata')
-    
 
-    
     # Calculate the cutoff date (most recent 349 days)
     cutoff_date = datetime.now() - timedelta(days=349)
 
     # Filter the data to include only entries within the last 349 days
     filtered_data = [entry for entry in full_data if datetime.fromisoformat(entry['time']) >= cutoff_date]
-    #print(filtered_data)
 
     # Convert filtered_data to DataFrame
     stock_data = pd.DataFrame({
@@ -86,13 +77,8 @@ async def upload_image(allData: ImageInput):  # Change this to accept an ImageIn
         'Volume': [entry['volume'] for entry in filtered_data],
         'Adj_Close': [entry['adj_close'] for entry in filtered_data]
     })
-    
-    #print("this is stoock data: ", stock_data)
 
     updated_stock_data = calculate_indicators(stock_data)
-    
-    #print("this is stoock data: ", updated_stock_data)
-
 
     # Get the size of the image
     width, height = image_pil.size
@@ -120,10 +106,10 @@ async def upload_image(allData: ImageInput):  # Change this to accept an ImageIn
         for box in boxes:
             # Bounding box
             x1, y1, x2, y2 = box.xyxy[0]
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2) # convert to int values
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
 
             # Confidence
-            confidence = math.ceil((box.conf[0]*100))/100
+            confidence = math.ceil((box.conf[0] * 100)) / 100
 
             # Calculate the time and value range of the bounding box
             box_time_start = time_start + timedelta(days=x1 / width * time_range)
@@ -151,37 +137,29 @@ async def upload_image(allData: ImageInput):  # Change this to accept an ImageIn
     # Print the bounding box data
     print({"bounding_boxes": bounding_boxes})
 
-    # Return the bounding box data
-    #return {"bounding_boxes": bounding_boxes}
-
-    
     # Process the results and generate output image
     for r in results:
         im_array = r.plot()  # plot a BGR numpy array of predictions
         im = Image.fromarray(im_array[..., ::-1])  # RGB PIL image
-        
+
         # Save the output image
         output_path = 'output.png'
-        im.save(output_path) 
+        im.save(output_path)
 
         # Convert the image to a Base64 string
         buffered = BytesIO()
         im.save(buffered, format="PNG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
 
-
-    # Return the bounding box data and the image URL
-    #print({"img": img_str})
-
-        scaler_features.fit(updated_stock_data.drop(columns=['Timestamp', 'Close', 'Volume', 'ROC', 'DI_pos',
-                                               'RSI', 'OBV']))
+    scaler_features.fit(updated_stock_data.drop(columns=['Timestamp', 'Close', 'Volume', 'ROC', 'DI_pos',
+                                                          'RSI', 'OBV']))
     scaler_close.fit(updated_stock_data['Close'].values.reshape(-1, 1))
-    
+
     # Preprocess the data
-    X_test = scaler_features.transform(updated_stock_data.drop(columns=['Timestamp', 'Close', 'Volume', 'ROC', 'DI_pos',
-                                               'RSI', 'OBV']))[:315]
+    X_test = scaler_features.transform(
+        updated_stock_data.drop(columns=['Timestamp', 'Close', 'Volume', 'ROC', 'DI_pos', 'RSI', 'OBV']))[:315]
     Y_test = scaler_close.transform(updated_stock_data['Close'].values.reshape(-1, 1))[315:]
-    
+
     # Process the tensors
     X_tensor = torch.tensor(X_test.astype(np.float32)).unsqueeze(0)
     Y_tensor = torch.tensor(Y_test.astype(np.float32))
@@ -195,7 +173,7 @@ async def upload_image(allData: ImageInput):  # Change this to accept an ImageIn
         print("Error loading model:", e)
         # Log the error for further analysis
         raise e
-    
+
     # Ensure the model is in evaluation mode
     lstm_model.eval()
     # Predictions
@@ -214,7 +192,7 @@ async def upload_image(allData: ImageInput):  # Change this to accept an ImageIn
     plt.xlabel('Time')
     plt.ylabel('Stock Price')
     plt.legend()
-    
+
     # Serialize the plot image to a base64 string
     buffered = BytesIO()
     plt.savefig(buffered, format="png")
@@ -232,11 +210,11 @@ async def upload_image(allData: ImageInput):  # Change this to accept an ImageIn
 
     sentiment = get_sentiment(predicted_stock)
     print(sentiment)
-    #return sentiment
 
     return {"bounding_boxes": bounding_boxes, "img": img_str, "predicted_stock": sentiment, "graph": plot_img_str}
 
 # Run the FastAPI app with Uvicorn
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
