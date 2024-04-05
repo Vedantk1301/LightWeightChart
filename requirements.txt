@@ -3,6 +3,7 @@ pydantic
 ultralytics
 Pillow
 python-multipart
+psycopg2-binary~=2.9.6
 datetime
 pandas
 scikit-learn
