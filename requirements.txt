@@ -1,1 +1,14 @@
-
+fastapi
+pydantic
+ultralytics
+Pillow
+python-multipart
+math
+datetime
+pandas
+scikit-learn
+torch
+numpy
+matplotlib
+seaborn
+pip==3.9
