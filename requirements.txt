@@ -1,12 +1,1 @@
-fastapi
-pydantic
-ultralytics
-Pillow
-python-multipart
-datetime
-pandas
-scikit-learn
-torch
-numpy
-matplotlib
-seaborn
+
