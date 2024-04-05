@@ -3,7 +3,6 @@ pydantic
 ultralytics
 Pillow
 python-multipart
-math
 datetime
 pandas
 scikit-learn
