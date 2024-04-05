@@ -11,4 +11,5 @@ torch
 numpy
 matplotlib
 seaborn
-pip==3.9
+pip
+uvicorn
