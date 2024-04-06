@@ -7,6 +7,7 @@ from ultralytics import YOLO
 from PIL import Image
 import base64
 import io
+from io import BytesIO
 import math
 from datetime import datetime, timedelta
 import pandas as pd
@@ -217,4 +218,4 @@ async def upload_image(allData: ImageInput):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
