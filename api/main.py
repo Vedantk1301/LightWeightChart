@@ -12,9 +12,9 @@ from datetime import datetime, timedelta
 import pandas as pd
 from sklearn.preprocessing import RobustScaler
 import torch
-from api.model_functions import calculate_r2, calculate_mape, plot_predictions
-from api.LSTM_GRU import StockLSTM
-from api.Feature_generator import calculate_indicators
+from model_functions import calculate_r2, calculate_mape, plot_predictions
+from LSTM_GRU import StockLSTM
+from Feature_generator import calculate_indicators
 import numpy as np
 import matplotlib.pyplot as plt
 
