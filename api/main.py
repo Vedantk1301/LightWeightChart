@@ -30,7 +30,7 @@ app.add_middleware(
 )
 
 # Load your YOLO model
-model = YOLO('api/best.pt')
+model = YOLO('best.pt')
 
 # Define a request body model for uploading images
 class ImageInput(BaseModel):
