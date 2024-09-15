@@ -1,33 +1,39 @@
-# stock_analysis.py
-
 import pandas as pd
-import talib as ta
+import pandas_ta as ta
 import numpy as np
-from datetime import datetime
-
-def calculate_rsi(prices, window=14):
-    rsi = ta.RSI(prices.fillna(np.nan).to_numpy(), timeperiod=window)
-    return pd.Series(rsi, index=prices.index)
+from io import BytesIO  # Import BytesIO class from io module
 
 def calculate_indicators(df):
     # Calculate EMA, MACD, and RSI for the stock
-    df['EMA12'] = df['Close'].ewm(span=12, adjust=False).mean()
-    df['EMA26'] = df['Close'].ewm(span=26, adjust=False).mean()
-    df['EMA50'] = df['Close'].ewm(span=50, adjust=False).mean()
-    df['ATR'] = ta.ATR(df['High'], df['Low'], df['Close'], timeperiod=14)
-    df['ROC'] = ta.ROC(df['Close'], timeperiod=12)
-    df['MACD'] = df['EMA12'] - df['EMA26']
-    df['RSI'] = calculate_rsi(df['Close'])
-    bb_upper, _, bb_lower = ta.BBANDS(df['Close'], timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
-    df['BB_upper'] = bb_upper
-    df['BB_lower'] = bb_lower  # Rate of Change
-    df['DI_pos'] = ta.PLUS_DI(df['High'], df['Low'], df['Close'], timeperiod=14)
-    df['SMA'] = ta.SMA(df['Close'], timeperiod=20)  # Simple Moving Average
-    df['TSF'] = ta.TSF(df['Close'], timeperiod=14)  # Time Series Forecast
-    df['WCP'] = (df['High'] + df['Low'] + df['Close']) / 3  # Weighted Close Price
-    df['WMA'] = ta.WMA(df['Close'], timeperiod=20)  # Weighted Moving Average
-    df['SAR'] = ta.SAR(df['High'], df['Low'], acceleration=0.02, maximum=0.2)  # Parabolic SAR
-    df['OBV'] = ta.OBV(df['Close'], df['Volume'])  # On-Balance Volume
+    df['EMA12'] = df.ta.ema(close='Close', length=12)
+    df['EMA26'] = df.ta.ema(close='Close', length=26)
+    df['EMA50'] = df.ta.ema(close='Close', length=50)
+    df['ATR'] = df.ta.atr(high='High', low='Low', close='Close', length=14)
+    df['ROC'] = df.ta.roc(close='Close', length=12)
+    macd = ta.macd(df['Close'], fast=12, slow=26, signal=9)
+    df['MACD'] = macd.iloc[:, 0]  # Accessing the MACD values from the DataFrame
+    df['MACD_signal'] = macd.iloc[:, 1]  # Accessing the MACD signal line values
+    df['RSI'] = df.ta.rsi(close='Close', length=14)
+    bb_bands = ta.bbands(df['Close'], length=20, std=2)
+    df['BB_upper'] = bb_bands['BBU_20_2.0']
+    df['BB_lower'] = bb_bands['BBL_20_2.0']
+    df['DI_pos'] = df.ta.dpo(close='Close', length=14)
+    df['SMA'] = df.ta.sma(close='Close', length=20)
+    df['TSF'] = df['Close'].rolling(window=14).mean()  # Calculate TSF manually
+    df['WCP'] = df.ta.wcp(close='Close')
+    df['WMA'] = df.ta.wma(close='Close', length=20)
+    
+    # Calculate SAR manually
+    initial_sar = df.iloc[0]['High'] if df.iloc[0]['Close'] > df.iloc[1]['Close'] else df.iloc[0]['Low']
+    sar = [initial_sar]
+    for i in range(1, len(df)):
+        if sar[i - 1] < df.iloc[i]['High']:
+            sar.append(min(sar[i - 1] + df.iloc[i]['ATR'], df.iloc[i]['Low']))
+        else:
+            sar.append(max(sar[i - 1] - df.iloc[i]['ATR'], df.iloc[i]['High']))
+    df['SAR'] = sar
+    
+    df['OBV'] = df.ta.obv(close='Close', volume='Volume')
     df.dropna(axis=0, inplace=True)
     
     return df

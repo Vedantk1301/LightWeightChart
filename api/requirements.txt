@@ -3,11 +3,10 @@ pydantic
 ultralytics
 Pillow
 python-multipart
-math
 datetime
 pandas
+numpy
 scikit-learn
 torch
-numpy
-matplotlib
-seaborn
+uvicorn
+pandas_ta
